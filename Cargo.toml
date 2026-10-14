@@ -1,0 +1,69 @@
+[package]
+name = "dag"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "DAG algorithms (semiring DP, dominators, reachability, transitive reduction, width) for webgraph DAGs, at the scale of the Bitcoin Payment Graph"
+authors = ["Massimo Nocentini <massimo.nocentini@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/massimo-nocentini/dag-rs"
+readme = "README.md"
+keywords = ["graph", "dag", "dominators", "reachability", "webgraph"]
+categories = ["algorithms", "science"]
+publish = false
+
+[lib]
+name = "dag"
+path = "src/lib.rs"
+
+[[bin]]
+name = "dag"
+path = "src/main.rs"
+
+[dependencies]
+# webgraph-rs main at the commit this crate was developed and validated against (0.6.1).
+webgraph       = { git = "https://github.com/vigna/webgraph-rs.git", rev = "f8698a7bdda2c4e171017548307179cd5c7a3166" }
+webgraph-algo  = { git = "https://github.com/vigna/webgraph-rs.git", rev = "f8698a7bdda2c4e171017548307179cd5c7a3166" }
+card-est-array = "0.6.0"
+sux            = { version = "0.14.0", features = ["epserde", "rayon", "mmap"] }
+dsi-progress-logger = "0.8.7"
+dsi-bitstream  = "0.9.2"
+epserde        = "0.12.6"
+lender         = "0.6.2"
+rayon          = "1.10.0"
+sync-cell-slice = "0.9.12"
+value-traits   = "0.2.1"
+mmap-rs        = "0.7.0"
+libc           = "0.2.174"       # madvise(MADV_HUGEPAGE) in io::huge_vec only
+anyhow         = "1.0.102"
+thiserror      = "2.0.18"
+log            = "0.4.27"
+env_logger     = "0.11.8"
+clap           = { version = "4.5.40", features = ["derive"] }
+serde          = { version = "1.0.228", features = ["derive"] }
+serde_json     = "1.0.140"
+rand           = "0.10.1"        # SmallRng, RngExt::random_range; also needed by HyperBall::run in tests
+
+[dev-dependencies]
+tempfile = "3.20.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+debug = "line-tables-only"
+
+[profile.release-test]           # used by every `cargo test` of the units
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true
+debug-assertions = true
+overflow-checks = true
+
+[profile.release-test.package."*"]
+debug-assertions = false
+overflow-checks = false
+
+[profile.dev.package."*"]
+opt-level = 3                    # webgraph decoding in dev builds
